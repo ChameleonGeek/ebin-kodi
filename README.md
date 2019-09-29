@@ -11,9 +11,9 @@ This project will install several necessary programs such as:
 - Samba Server, which manages file sharing
 - Open SSH Server which removes the USB tether for further configuration and management
 
-## Prepare the MicroSD card
+## 1.  Prepare the MicroSD card
 
-## Prep the EspressoBin to boot from MicroSD card
+## 2.  Prep the EspressoBin to boot from MicroSD card
 - Install the prepped MicroSD card into the EspressoBin.
 - Connect a micro USB cable to the EspressoBin and your computer.
   - The green power LED will turn on, and your computer will detect that a device has been connected.  The EspressoBin *is not* powered via USB and *can not* be configured without 12v power.
@@ -33,7 +33,7 @@ saveenv
 ```
 - Type "reset" and hit enter.  The EspressoBin will now boot into Ubuntu.
 
-## First steps in Ubuntu
+## 3.  First steps in Ubuntu
 These first steps must be performed over the serial console.  The EspressoBin must be configured to connect to the internet, needs a quick fix and needs one piece of software to be manually added.
 - Log in to Ubuntu.  The initial user is "root" with no password.  We'll give root a password later, but not during the first steps.
 - Ubuntu has CPU throttling enabled by default.  This will create a kernel panic on the EspressoBin, so needs to be disabled.  Since the EspressoBin already draws very little power, CPU throttling is almost pointless.
@@ -65,6 +65,8 @@ echo 'pre-up /sbin/ifconfig eth0 up' >> /etc/network/interfaces
 ```
 - Copy the updated text from your text editor and paste into the terminal program.
 - Reboot the EspressoBin by typing "reboot" and hit enter.
+
+## 4.  Configure Ubuntu with the ebin-kodi script
 - Log into Ubuntu (still root / no password).
 - Update your package lists
 ```
