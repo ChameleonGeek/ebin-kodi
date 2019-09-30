@@ -62,21 +62,36 @@ You will encounter errors stating "unable to resolve host localhost.localdomain:
 ```
 sudo su
 
-# UPDATE THESE VARIABLES AS APPROPRIATE.  KEEP THE VALUES IN QUOTES
+# Disable CPU Throttling
+update-rc.d ondemand disable
+
 IP_ADDRESS="192.168.0.124"
 NET_MASK="255.255.255.0"
 NETWORK="192.168.0.0"
 BROADCAST="192.168.0.255"
 GATEWAY="192.168.0.1"
-# DON'T CHANGE ANY VALUES BELOW THIS LINE
 
-# Disable CPU Throttling
-update-rc.d ondemand disable
+qry(){
+  t=$(whiptail --title "$2" --inputbox "$3" 8 78 "$1" 3>&1 1>&2 2>&3)
+	exitstatus=$?
+	if [ $exitstatus == 0 ]; then
+    echo "$t"
+  else
+    echo "$1"
+	fi
+}
 
 # Temporary hostname to eliminate hosts file errors
 # The user will have the option to update later
 echo 'kodiserver' > /etc/hostname
 echo -e "127.0.0.1\tkodiserver" > /etc/hosts
+
+# ASK USER FOR INPUT
+IP_ADDRESS=$(qry "$IP_ADDRESS" "IP Address" "Enter the IP Address for the EspressoBin")
+NET_MASK=$(qry "$NET_MASK" "Network Mask" "Enter the Network Mask for your network")
+NETWORK=$(qry "$NETWORK" "Network" "Enter the base network for the EspressoBin")
+BROADCAST=$(qry "$BROADCAST" "Broadcast" "Enter the Broadcast IP Address for the network") 
+GATEWAY=$(qry "$GATEWAY" "Gateway" "Enter the gateway (router) IP Address")
 
 # CONFIGURE INITIAL NETWORK CONNECTION
 echo 'auto eth0' > /etc/network/interfaces
