@@ -38,7 +38,7 @@ GetHostName(){
 	splash "Give this system a name"
 	HOST=$(whiptail --title "HOSTNAME" --inputbox "Enter a name for this system" 8 78 "$HOST" 3>&1 1>&2 2>&3)
 	exitstatus=$?
-	if [ $exitstatus == 0 ]; then
+	if [ $exitstatus = 0 ]; then
 		if(whiptail --title "Confirm Host Name" --yesno "You entered $HOST.  Is this correct?" 8 78) then
 			echo -e "127.0.0.1\t$HOST" > /etc/hosts
 			echo "$HOST" > /etc/hostname
@@ -52,7 +52,7 @@ GetNewUser(){
 	splash "Create user to interact with the EspressoBin"
 	NEWUSER=$(whiptail --title "Interactive User" --inputbox "Enter (new) user name to interact with the EspressoBin" 8 78 "" 3>&1 1>&2 2>&3)
 	exitstatus=$?
-	if [ $exitstatus == 0 ]; then
+	if [ $exitstatus = 0 ]; then
 		if(whiptail --title "Confirm User Name" --yesno "You entered $NEWUSER.  Is this correct?" 8 78) then
 			splash "Adding User $NEWUSER - Please answer the questions"
 			sudo adduser $NEWUSER
