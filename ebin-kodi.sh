@@ -110,6 +110,16 @@ SoftwareInstall(){
 		splash "Installing Samba Server"
 		sudo tasksel install samba-server
 		
+		splash "Installing phpMyAdmin"
+		sudo apt-get install phpmyadmin php-mbstring php-gettext -y
+		sudo phpenmod mcrypt
+    		sudo phpenmod mbstring
+		sudo systemctl restart apache2
+
+		
+		# Update timezone
+		sudo dpkg-reconfigure tzdata
+		
 		echo "1" > install-complete
 	fi
 }
@@ -124,9 +134,10 @@ SoftwareInstall(){
 #                 Direct the Installation and Configuration
 # ==============================================================================
 # ==============================================================================
+# Update EspressoBin hostname to remove "unable to resolve host localhost.localdomain: Connection refused" notices
+# This is done early to prevent user concerns
+GetHostName
 # Install the software
 SoftwareInstall
 # Create a user other than root with superuser permissions
 GetNewUser
-# Update EspressoBin hostname to remove "unable to resolve host localhost.localdomain: Connection refused" notices
-GetHostName
