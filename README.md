@@ -64,8 +64,6 @@ sudo su
 ```
 - Copy the code below and paste into the terminal. _The main script will allow you to change this initial configuration later._
 ```
-sudo su
-
 # Disable CPU Throttling
 update-rc.d ondemand disable
 
@@ -128,7 +126,6 @@ runconfig
 
 
 ```
-- Copy the updated text from your text editor and paste into the terminal program.
 - Reboot the EspressoBin by typing "reboot" and hit enter.
 
 ## 4.  Configure Ubuntu with the ebin-kodi script
