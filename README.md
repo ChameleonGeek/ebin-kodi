@@ -56,34 +56,12 @@ These first steps must be performed over the serial console.  The EspressoBin mu
 You will encounter errors stating "unable to resolve host localhost.localdomain: Connection refused" This is just a notice, and the issue will be corrected by the ebin-kodi script.
 
 - Log in to Ubuntu.  The initial user is "root" with no password.  We'll give root a password later, but not during the first steps.
-- Ubuntu has CPU throttling enabled by default.  This will create a kernel panic on the EspressoBin, so needs to be disabled.  Since the EspressoBin already draws very little power, CPU throttling is almost pointless.
-- Networking needs to be configured before the EspressoBin can connect to the internet.
-- Elevate to superuser
+- Copy the code below and paste into the terminal. This code will configure the EspressoBin to use DHCP, will update software sources and download/run the main configuration script.  _This script will make some temporary network settings (DHCP/temporary hostname). The main script will allow you to change this initial configuration later._
 ```
-sudo su
-```
-- Copy the code below and paste into the terminal. _This script will make some temporary network settings. The main script will allow you to change this initial configuration later._
-```
-# Disable CPU Throttling
-update-rc.d ondemand disable
-
-IP_ADDRESS="192.168.0.124"
-NET_MASK="255.255.255.0"
-NETWORK="192.168.0.0"
-GATEWAY="192.168.0.1"
-
 qry(){
 	t=$(whiptail --title "$2" --inputbox "$3" 8 78 "$1" 3>&1 1>&2 2>&3)
-	#EXIT=$?
-	if [ $? = 0 ] ; then echo "$t"; else echo "$1"; fi
-}
-
-# ASK USER FOR INPUT
-inputs(){
-	IP_ADDRESS=$(qry "$IP_ADDRESS" "IP Address" "Enter the IP Address for the EspressoBin")
-	NET_MASK=$(qry "$NET_MASK" "Network Mask" "Enter the Network Mask for your network")
-	NETWORK=$(qry "$NETWORK" "Network" "Enter the base network for the EspressoBin")
-	GATEWAY=$(qry "$GATEWAY" "Gateway" "Enter the gateway (router) IP Address")
+	echo "$t" > "${2}"
+	echo "$t"
 }
 
 # CONFIGURE INITIAL NETWORK CONNECTION
@@ -93,50 +71,33 @@ netcfg(){
 	echo 'kodiserver' > /etc/hostname
 	echo -e "127.0.0.1\tkodiserver" > /etc/hosts
 
-	echo 'auto eth0' > /etc/network/interfaces
-	echo 'iface eth0 inet manual' >> /etc/network/interfaces
-	echo '' >> /etc/network/interfaces
-	echo 'auto lo' >> /etc/network/interfaces
-	echo 'iface lo inet loopback' >> /etc/network/interfaces
-	echo '' >> /etc/network/interfaces
-	echo 'auto lan1' >> /etc/network/interfaces
-	echo 'iface lan1 inet static' >> /etc/network/interfaces
-	echo -e "\taddress $IP_ADDRESS" >> /etc/network/interfaces
-	echo -e "\tnetmask $NET_MASK" >> /etc/network/interfaces
-	echo -e "\tnetwork $NETWORK" >> /etc/network/interfaces
-	echo -e "\tgateway $GATEWAY" >> /etc/network/interfaces
-	echo -e "\tdns-nameservers 8.8.8.8" >> /etc/network/interfaces
-	echo '' >> /etc/network/interfaces
-	echo 'pre-up /sbin/ifconfig lan1 up' >> /etc/network/interfaces
-	#echo 'pre-up /sbin/ifconfig eth0 up' >> /etc/network/interfaces
+	ip link set dev eth0 up
+	ip link set dev lan1 up
+	dhclient lan1
+	echo -e "\033[1;32mRestarting Networking.  This will take a moment.\033[0m"
+	/etc/init.d/networking restart
+	echo -e "\033[1;32mChecking if EspressoBin is on line.\033[0m"
+	ping -c 3 github.com
 }
 
 runconfig(){
-	inputs
+	clear
+	echo -e "\033[1;32mPerforming temporary (DHCP) network configuration.\033[0m"
 	netcfg
+	echo -e "\033[1;32mUpdating Ubuntu\033[0m"
+	apt-get update
+	echo -e "\033[1;32mInstalling wget/downloading script\033[0m"
+	apt-get install wget -y
+	wget https://raw.githubusercontent.com/ChameleonGeek/ebin-kodi/master/ebin-kodi.sh -q
+	chmod +x ebin-kodi.sh
+	#sudo sh ebin-kodi.sh
 }
 
 runconfig
 
-```
-- Reboot the EspressoBin by typing "reboot" and hit enter.
 
-## 4.  Configure Ubuntu with the ebin-kodi script
-- Log into Ubuntu (still root / no password).
-- Update your package lists
 ```
-sudo apt-get update
-```
-- Install wget
-```
-sudo apt-get install wget -y
-```
-- Download, prep and run main configuration script
-```
-wget https://raw.githubusercontent.com/ChameleonGeek/ebin-kodi/master/ebin-kodi.sh
-chmod +x ebin-kodi.sh
-sudo sh ebin-kodi.sh
-```
+- 
 - The script will walk you through the configuration process.  It will ask questions to guide you through the process, such as user names and network and domain configuration information.  To ensure better security, requests for passwords are made by Ubuntu or trusted installers rather than the script.
 - Select "UTF-8" when asked what encoding should be used on the console, unless you are sure you need a different setting.
 - Select your timezone when prompted.
@@ -148,14 +109,16 @@ sudo sh ebin-kodi.sh
   - Enter and confirm a password for the phpMyAdmin application to connect to MySQL.  You can let phpMyAdmin create a random password.  As a user or DBA, you won't need to use this password.
 - Interactive User:
   - The root account shouldn't be used for routine interactions with the EspressoBin.  Enter a user name and password for this interactive account and answer the Ubuntu user information questions.
+  - **Write down or remember this username and password.  It is the interactive superuser account.**
 - Root User:
   - By default, Ubuntu sets the root account with no password.  This account should be password protected.  This should not be the same password as the interactive user.
-## 5.  Configuration cleanup via Webmin
+  - **Write down or remember this user name and password.**
+## 4.  Configuration cleanup via Webmin
 - Open a web browser and navigate to https://[espressobin ip address]:10000
-- Enter the username and password created while running the script and click "Sign In"
+- Enter the interactive user name and password created while running the script and click "Sign In"
 - The webmin dashboard will load.  On the left of the page, click "Refresh Modules."  This will ensure that the proper modules display in the "Servers" section at the left.
 
-## 6.  Do what you want with the EspressoBin
+## 5.  Do what you want with the EspressoBin
 - A LAMP (Linux-Apache-MySQL-PHP) server is installed and can be browsed at http://[espressobin ip address]
 - MySQL has been installed
   - phpMyAdmin is a web-based MySQL management tool, which can be accessed at http://[espressobin ip address]/phpmyadmin
