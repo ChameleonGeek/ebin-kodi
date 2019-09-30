@@ -62,7 +62,7 @@ You will encounter errors stating "unable to resolve host localhost.localdomain:
 ```
 sudo su
 ```
-- Copy the code below and paste into the terminal. _The main script will allow you to change this initial configuration later._
+- Copy the code below and paste into the terminal. _This script will make some temporary network settings. The main script will allow you to change this initial configuration later._
 ```
 # Disable CPU Throttling
 update-rc.d ondemand disable
@@ -70,16 +70,12 @@ update-rc.d ondemand disable
 IP_ADDRESS="192.168.0.124"
 NET_MASK="255.255.255.0"
 NETWORK="192.168.0.0"
-BROADCAST="192.168.0.255"
 GATEWAY="192.168.0.1"
 
 qry(){
 	t=$(whiptail --title "$2" --inputbox "$3" 8 78 "$1" 3>&1 1>&2 2>&3)
-	if [ $? == 0 ]; then
-		echo "$t"
-	else
-		echo "$1"
-	fi
+	#EXIT=$?
+	if [ $? = 0 ] ; then echo "$t"; else echo "$1"; fi
 }
 
 # ASK USER FOR INPUT
@@ -87,7 +83,6 @@ inputs(){
 	IP_ADDRESS=$(qry "$IP_ADDRESS" "IP Address" "Enter the IP Address for the EspressoBin")
 	NET_MASK=$(qry "$NET_MASK" "Network Mask" "Enter the Network Mask for your network")
 	NETWORK=$(qry "$NETWORK" "Network" "Enter the base network for the EspressoBin")
-	BROADCAST=$(qry "$BROADCAST" "Broadcast" "Enter the Broadcast IP Address for the network") 
 	GATEWAY=$(qry "$GATEWAY" "Gateway" "Enter the gateway (router) IP Address")
 }
 
@@ -109,12 +104,11 @@ netcfg(){
 	echo -e "\taddress $IP_ADDRESS" >> /etc/network/interfaces
 	echo -e "\tnetmask $NET_MASK" >> /etc/network/interfaces
 	echo -e "\tnetwork $NETWORK" >> /etc/network/interfaces
-	echo -e "\tbroadcast $BROADCAST" >> /etc/network/interfaces
 	echo -e "\tgateway $GATEWAY" >> /etc/network/interfaces
 	echo -e "\tdns-nameservers 8.8.8.8" >> /etc/network/interfaces
 	echo '' >> /etc/network/interfaces
 	echo 'pre-up /sbin/ifconfig lan1 up' >> /etc/network/interfaces
-	echo 'pre-up /sbin/ifconfig eth0 up' >> /etc/network/interfaces
+	#echo 'pre-up /sbin/ifconfig eth0 up' >> /etc/network/interfaces
 }
 
 runconfig(){
@@ -123,7 +117,6 @@ runconfig(){
 }
 
 runconfig
-
 
 ```
 - Reboot the EspressoBin by typing "reboot" and hit enter.
@@ -146,6 +139,7 @@ sudo sh ebin-kodi.sh
 ```
 - The script will walk you through the configuration process.  It will ask questions to guide you through the process, such as user names and network and domain configuration information.  To ensure better security, requests for passwords are made by Ubuntu or trusted installers rather than the script.
 - Select "UTF-8" when asked what encoding should be used on the console, unless you are sure you need a different setting.
+- Select your timezone when prompted.
 - You will be asked for a root password for MySQL server.  This request is made by the MySQL installer, not this script.
   - **Write down or remember this password**
 - Cofiguring phpmyadmin
