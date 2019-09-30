@@ -1,20 +1,54 @@
 # ebin-kodi
 Configure an EspressoBin v7 into an Ubuntu 16.04 LTS server to support kodi media file storage and management
 
-This project configures a fresh, out of the box EspressoBin v7 SBC to support a home Kodi/OSMC media center among other file serving and management needs.  It is intended to supplement the lackluster EspressoBin documentation, and help Linux noobs quickly build a robust system.
+This project configures a fresh, out of the box EspressoBin v7 SBC to support a Raspberry Pi-based home Kodi/OSMC media center among other file serving and management needs.  It is intended to supplement the lackluster EspressoBin documentation, and help Linux noobs quickly build a robust system.
 
 My goal is to create a step-by-step guide which can be followed by tech amateurs so that they can use the EspressoBin.  The poor state of the EspressoBin documentation may lead potential users to believe that the hardware is similarly lackluster, which is far from the truth.  I have been abusing my EspressoBin for more than a year, and it has handled everything I've thrown at it far better than I ever expected from the otherwise poor support. My EspressoBin has been proven capable of far more than simple file serving.  This project will give the user the option to install other software which will make the EspressoBin even more useful.
 
 This project will install several necessary programs such as:
-- wget, which allows the user to download the configuration script
+- wget, which allows the user to download (this project's) configuration script
 - Webmin, which allows a web-based configuration GUI for the EspressoBin
 - Samba Server, which manages file sharing
 - Open SSH Server which removes the USB tether for further configuration and management
 
 ## 1.  Prepare the MicroSD card
+Since this project is intended to be paired with a Raspberry Pi, you should have one on hand.  Windows lacks the toolchain to properly prepare the card without long-lasting headaches, but Raspbian has what's needed.  These steps have been developed on a Raspberry Pi, and should be valid in most Linux distributions. **A USB MicroSD card reader is needed to prep the MicroSD card.**
+- Boot the Raspberry pi with a functional Raspbian OS.
+  - The Raspberry Pi Foundation has easy-to follow instructions using Windows/Apple/Linux at https://projects.raspberrypi.org/en/projects/raspberry-pi-setting-up
+- If you encounter issues preparing the MicroSD card for the Espressobin, you can follow the steps above and just create a second Raspbian image, which will be overwritten as you proceed.
+- Download the EspressoBin Ubuntu 16.04 LTS image from http://espressobin.net/tech-spec/
+  - Click the download link rather than "Creating Ubuntu filesystem"
+- Using the built-in Raspbian tools, unzip the downloaded file to copy rootfs.tar.bz2 from the zip file to the home directory for the user "pi"
+  - Open the File Manager
+  - Click the button on the bottom of the Raspbian web browser alerting that the Ubuntu filesystem was downloaded (ebin-ubuntu...)
+  - Drag the rootfs.tar.bz2 file from the Xarchiver window to the File Manager window
+- Connect the MicroSD card reader to the USB port of the Raspberry Pi. Select "open in file manager" in the popup once the MicroSD card is connected.  Note the path to the card displayed in the file manager (Note 1).
+- Identify the device path of the MicroSD card *It **is not** /dev/mmcblk...*.  It is most likely /dev/sda1 (Note 2).
+```
+lsblk
+```
+- Copy the code below and update as necessary in a text editor (change the values for MOUNTPOINT and DEVICEPATH).
+```
+# Replace (Note 1) and (Note 2) with noted values.  Keep quotes but not parenthesis
+MOUNTPOINT="(Note 1)"
+DEVICEPATH="(Note 2)"
+# DON'T MAKE CHANGES BELOW THIS LINE
+sudo umount $MOUNTPOINT
+sudo mkdir /ebincard
+sudo mkfs -t ext4 $DEVICEPATH
+sudo mount $DEVICEPATH /ebincard
+cd /ebincard
+sudo tar -xvf /home/pi/rootfs.tar.bz2
+cd /home/pi
+sudo umount /ebincard
+sudo rm -rf /ebincard
+```
+- Open a terminal in Raspbian and paste the updated contents into the terminal.
+- Once the terminal has finished processing, the MicroSD card reader can be disconnected from the Raspberry Pi without further steps.
 
 ## 2.  Prep the EspressoBin to boot from MicroSD card
 - Install the prepped MicroSD card into the EspressoBin.
+- Connect an ethernet cable from your network to the EspressoBin's WAN port (the separate ethernet connector).
 - Connect a micro USB cable to the EspressoBin and your computer.
   - The green power LED will turn on, and your computer will detect that a device has been connected.  The EspressoBin *is not* powered via USB and *can not* be configured without 12v power.
 - Connect 12v 2a power to the EspressoBin power connector.
@@ -35,14 +69,31 @@ saveenv
 
 ## 3.  First steps in Ubuntu
 These first steps must be performed over the serial console.  The EspressoBin must be configured to connect to the internet, needs a quick fix and needs one piece of software to be manually added.
+
+You will encounter errors stating "unable to resolve host localhost.localdomain: Connection refused" This is just a notice, and the issue will be corrected by the ebin-kodi script.
+
 - Log in to Ubuntu.  The initial user is "root" with no password.  We'll give root a password later, but not during the first steps.
 - Ubuntu has CPU throttling enabled by default.  This will create a kernel panic on the EspressoBin, so needs to be disabled.  Since the EspressoBin already draws very little power, CPU throttling is almost pointless.
 - Networking needs to be configured before the EspressoBin can connect to the internet.
-- Copy the code below and update it to suit your network in a text editor.  Update anywhere enclosed in [[ ]] brackets, removing the brackets. _The main script will allow you to change this initial configuration later._
+- Copy the code below and update it to suit your network in a text editor.  Update the variable values near the top of the code. _The main script will allow you to change this initial configuration later._
 ```
 sudo su
+
+# UPDATE THESE VARIABLES AS APPROPRIATE.  KEEP THE VALUES IN QUOTES
+IP_ADDRESS="192.168.0.124"
+NET_MASK="255.255.255.0"
+NETWORK="192.168.0.0"
+BROADCAST="192.168.0.255"
+GATEWAY="192.168.0.1"
+# DON'T CHANGE ANY VALUES BELOW THIS LINE
+
 # Disable CPU Throttling
 update-rc.d ondemand disable
+
+# Temporary hostname to eliminate hosts file errors
+# The user will have the option to update later
+echo 'kodiserver' > /etc/hostname
+echo -e '127.0.0.1\tkodiserver' > /etc/hosts
 
 # CONFIGURE INITIAL NETWORK CONNECTION
 echo 'auto eth0' > /etc/network/interfaces
@@ -53,11 +104,11 @@ echo 'iface lo inet loopback' >> /etc/network/interfaces
 echo '' >> /etc/network/interfaces
 echo 'auto lan1' >> /etc/network/interfaces
 echo 'iface lan1 inet static' >> /etc/network/interfaces
-echo 'address [[192.168.0.124]]' >> /etc/network/interfaces
-echo 'netmask [[255.255.255.0]]' >> /etc/network/interfaces
-echo 'network [[192.168.0.0]]' >> /etc/network/interfaces
-echo 'broadcast [[192.168.0.255]]' >> /etc/network/interfaces
-echo 'gateway [[192.168.0.1]]' >> /etc/network/interfaces
+echo -e "\taddress $IP_ADDRESS" >> /etc/network/interfaces
+echo -e "\tnetmask $NET_MASK" >> /etc/network/interfaces
+echo -e "\tnetwork $NETWORK" >> /etc/network/interfaces
+echo -e "\tbroadcast $BROADCAST" >> /etc/network/interfaces
+echo -e "\tgateway $GATEWAY" >> /etc/network/interfaces
 echo 'dns-nameservers 8.8.8.8' >> /etc/network/interfaces
 echo '' >> /etc/network/interfaces
 echo 'pre-up /sbin/ifconfig lan1 up' >> /etc/network/interfaces
@@ -72,18 +123,38 @@ echo 'pre-up /sbin/ifconfig eth0 up' >> /etc/network/interfaces
 ```
 sudo apt-get update
 ```
-- Install wget (git???)
+- Install wget
 ```
 sudo apt-get install wget -y
 ```
 - Download, prep and run main configuration script
 ```
-wget <script in process>
-chmod +x <script in process>
-sudo sh <script in process>
+wget https://github.com/ChameleonGeek/ebin-kodi/ebin-kodi.sh
+chmod +x ebin-kodi.sh
+sudo sh ebin-kodi.sh
 ```
-- The script will walk you through the configuration process.  It will ask questions to guide you through the process, such as user names and passwords as well as network and domain configuration information.
+- The script will walk you through the configuration process.  It will ask questions to guide you through the process, such as user names and network and domain configuration information.  To ensure better security, requests for passwords are made by Ubuntu or trusted installers rather than the script.
+- Select "UTF-8" when asked what encoding should be used on the console, unless you are sure you need a different setting.
+- You will be asked for a root password for MySQL server.  This request is made by the MySQL installer, not this script.
+  - **Write down or remember this password**
+- Cofiguring phpmyadmin
+  - Ensure apache2 is selected (spacebar) and hit enter
+  - Select yes when asked whether to use dbconfig-common to set up the database
+  - Enter the MySQL root password you created earlier in this script
+  - Enter and confirm a password for the phpMyAdmin application itself
 
+## 5.  Configuration cleanup via Webmin
+- Open a web browser and navigate to https://[espressobin ip address]:10000
+- Enter the username and password created while running the script and click "Sign In"
+- The webmin dashboard will load.  On the left of the page, click "Refresh Modules."  This will ensure that the proper modules display in the "Servers" section at the left.
 
-
-
+## 6.  Do what you want with the EspressoBin
+- A LAMP (Linux-Apache-MySQL-PHP) server is installed and can be browsed at http://[espressobin ip address]
+- MySQL has been installed
+  - phpMyAdmin is a web-based MySQL management tool, which can be accessed at http://[espressobin ip address]/phpmyadmin
+- Webmin is a web-based administrative console, which can be accessed at https://[espressobin ip address]:10000
+  - Most web browsers will complain that the EspressoBin's SSL certificate is not secure.  This is OK, even if annoying.
+  - Login with the username and password you created during the script (not root)
+  - Webmin has modules which manage connecting and (auto) mounting external drives, managing Samba file sharing, Open SSH access and many other functions.
+  - Webmin allows you to install security and program updates without the need to understand Linux bash commands.
+- Python3 is already installed as part of the base Ubuntu image.  Python3 pip has been installed to permit the addition of other Python modules.
