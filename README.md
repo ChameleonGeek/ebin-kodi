@@ -87,13 +87,16 @@ echo 'kodiserver' > /etc/hostname
 echo -e "127.0.0.1\tkodiserver" > /etc/hosts
 
 # ASK USER FOR INPUT
-IP_ADDRESS=$(qry "$IP_ADDRESS" "IP Address" "Enter the IP Address for the EspressoBin")
-NET_MASK=$(qry "$NET_MASK" "Network Mask" "Enter the Network Mask for your network")
-NETWORK=$(qry "$NETWORK" "Network" "Enter the base network for the EspressoBin")
-BROADCAST=$(qry "$BROADCAST" "Broadcast" "Enter the Broadcast IP Address for the network") 
-GATEWAY=$(qry "$GATEWAY" "Gateway" "Enter the gateway (router) IP Address")
+inputs(){
+	IP_ADDRESS=$(qry "$IP_ADDRESS" "IP Address" "Enter the IP Address for the EspressoBin")
+	NET_MASK=$(qry "$NET_MASK" "Network Mask" "Enter the Network Mask for your network")
+	NETWORK=$(qry "$NETWORK" "Network" "Enter the base network for the EspressoBin")
+	BROADCAST=$(qry "$BROADCAST" "Broadcast" "Enter the Broadcast IP Address for the network") 
+	GATEWAY=$(qry "$GATEWAY" "Gateway" "Enter the gateway (router) IP Address")
+}
 
 # CONFIGURE INITIAL NETWORK CONNECTION
+netcfg(){
 echo 'auto eth0' > /etc/network/interfaces
 echo 'iface eth0 inet manual' >> /etc/network/interfaces
 echo '' >> /etc/network/interfaces
@@ -111,6 +114,11 @@ echo -e "\tdns-nameservers 8.8.8.8" >> /etc/network/interfaces
 echo '' >> /etc/network/interfaces
 echo 'pre-up /sbin/ifconfig lan1 up' >> /etc/network/interfaces
 echo 'pre-up /sbin/ifconfig eth0 up' >> /etc/network/interfaces
+}
+
+inputs
+netcfg
+
 ```
 - Copy the updated text from your text editor and paste into the terminal program.
 - Reboot the EspressoBin by typing "reboot" and hit enter.
