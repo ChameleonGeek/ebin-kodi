@@ -58,7 +58,11 @@ You will encounter errors stating "unable to resolve host localhost.localdomain:
 - Log in to Ubuntu.  The initial user is "root" with no password.  We'll give root a password later, but not during the first steps.
 - Ubuntu has CPU throttling enabled by default.  This will create a kernel panic on the EspressoBin, so needs to be disabled.  Since the EspressoBin already draws very little power, CPU throttling is almost pointless.
 - Networking needs to be configured before the EspressoBin can connect to the internet.
-- Copy the code below and update it to suit your network in a text editor.  Update the variable values near the top of the code. _The main script will allow you to change this initial configuration later._
+- Elevate to superuser
+```
+sudo su
+```
+- Copy the code below and paste into the terminal. _The main script will allow you to change this initial configuration later._
 ```
 sudo su
 
@@ -72,19 +76,13 @@ BROADCAST="192.168.0.255"
 GATEWAY="192.168.0.1"
 
 qry(){
-  t=$(whiptail --title "$2" --inputbox "$3" 8 78 "$1" 3>&1 1>&2 2>&3)
-	exitstatus=$?
-	if [ $exitstatus == 0 ]; then
-    echo "$t"
-  else
-    echo "$1"
+	t=$(whiptail --title "$2" --inputbox "$3" 8 78 "$1" 3>&1 1>&2 2>&3)
+	if [ $? == 0 ]; then
+		echo "$t"
+	else
+		echo "$1"
 	fi
 }
-
-# Temporary hostname to eliminate hosts file errors
-# The user will have the option to update later
-echo 'kodiserver' > /etc/hostname
-echo -e "127.0.0.1\tkodiserver" > /etc/hosts
 
 # ASK USER FOR INPUT
 inputs(){
@@ -97,27 +95,37 @@ inputs(){
 
 # CONFIGURE INITIAL NETWORK CONNECTION
 netcfg(){
-echo 'auto eth0' > /etc/network/interfaces
-echo 'iface eth0 inet manual' >> /etc/network/interfaces
-echo '' >> /etc/network/interfaces
-echo 'auto lo' >> /etc/network/interfaces
-echo 'iface lo inet loopback' >> /etc/network/interfaces
-echo '' >> /etc/network/interfaces
-echo 'auto lan1' >> /etc/network/interfaces
-echo 'iface lan1 inet static' >> /etc/network/interfaces
-echo -e "\taddress $IP_ADDRESS" >> /etc/network/interfaces
-echo -e "\tnetmask $NET_MASK" >> /etc/network/interfaces
-echo -e "\tnetwork $NETWORK" >> /etc/network/interfaces
-echo -e "\tbroadcast $BROADCAST" >> /etc/network/interfaces
-echo -e "\tgateway $GATEWAY" >> /etc/network/interfaces
-echo -e "\tdns-nameservers 8.8.8.8" >> /etc/network/interfaces
-echo '' >> /etc/network/interfaces
-echo 'pre-up /sbin/ifconfig lan1 up' >> /etc/network/interfaces
-echo 'pre-up /sbin/ifconfig eth0 up' >> /etc/network/interfaces
+	# Temporary hostname to eliminate hosts file errors
+	# The user will have the option to update later
+	echo 'kodiserver' > /etc/hostname
+	echo -e "127.0.0.1\tkodiserver" > /etc/hosts
+
+	echo 'auto eth0' > /etc/network/interfaces
+	echo 'iface eth0 inet manual' >> /etc/network/interfaces
+	echo '' >> /etc/network/interfaces
+	echo 'auto lo' >> /etc/network/interfaces
+	echo 'iface lo inet loopback' >> /etc/network/interfaces
+	echo '' >> /etc/network/interfaces
+	echo 'auto lan1' >> /etc/network/interfaces
+	echo 'iface lan1 inet static' >> /etc/network/interfaces
+	echo -e "\taddress $IP_ADDRESS" >> /etc/network/interfaces
+	echo -e "\tnetmask $NET_MASK" >> /etc/network/interfaces
+	echo -e "\tnetwork $NETWORK" >> /etc/network/interfaces
+	echo -e "\tbroadcast $BROADCAST" >> /etc/network/interfaces
+	echo -e "\tgateway $GATEWAY" >> /etc/network/interfaces
+	echo -e "\tdns-nameservers 8.8.8.8" >> /etc/network/interfaces
+	echo '' >> /etc/network/interfaces
+	echo 'pre-up /sbin/ifconfig lan1 up' >> /etc/network/interfaces
+	echo 'pre-up /sbin/ifconfig eth0 up' >> /etc/network/interfaces
 }
 
-inputs
-netcfg
+runconfig(){
+	inputs
+	netcfg
+}
+
+runconfig
+
 
 ```
 - Copy the updated text from your text editor and paste into the terminal program.
