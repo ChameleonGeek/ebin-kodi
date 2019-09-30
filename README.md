@@ -15,36 +15,19 @@ This project will install several necessary programs such as:
 Since this project is intended to be paired with a Raspberry Pi, you should have one on hand.  Windows lacks the toolchain to properly prepare the card without long-lasting headaches, but Raspbian has what's needed.  These steps have been developed on a Raspberry Pi, and should be valid in most Linux distributions. **A USB MicroSD card reader is needed to prep the MicroSD card.**
 - Boot the Raspberry pi with a functional Raspbian OS.
   - The Raspberry Pi Foundation has easy-to follow instructions using Windows/Apple/Linux at https://projects.raspberrypi.org/en/projects/raspberry-pi-setting-up
-- If you encounter issues preparing the MicroSD card for the Espressobin, you can follow the steps above and just create a second Raspbian image, which will be overwritten as you proceed.
-- Download the EspressoBin Ubuntu 16.04 LTS image from http://espressobin.net/tech-spec/
-  - Click the download link rather than "Creating Ubuntu filesystem"
-- Using the built-in Raspbian tools, unzip the downloaded file to copy rootfs.tar.bz2 from the zip file to the home directory for the user "pi"
-  - Open the File Manager
-  - Click the button on the bottom of the Raspbian web browser alerting that the Ubuntu filesystem was downloaded (ebin-ubuntu...)
-  - Drag the rootfs.tar.bz2 file from the Xarchiver window to the File Manager window
-- Connect the MicroSD card reader to the USB port of the Raspberry Pi. Select "open in file manager" in the popup once the MicroSD card is connected.  Note the path to the card displayed in the file manager (Note 1).
-- Identify the device path of the MicroSD card *It **is not** /dev/mmcblk...*.  It is most likely /dev/sda1 (Note 2).
+- If you encounter issues preparing the MicroSD card for the Espressobin, start over by following the steps above and just create a second Raspbian image, which will be overwritten as you proceed.
+- Connect the MicroSD card reader to the USB port of the Raspberry Pi. Select "open in file manager" in the popup once the MicroSD card is connected.  Note the path to the card displayed in the file manager (Mount Point).
+- Identify the device path of the MicroSD card *It **is not** /dev/mmcblk...*.  It is most likely /dev/sda1 (Device Path).
 ```
 lsblk
 ```
-- Copy the code below and update as necessary in a text editor (change the values for MOUNTPOINT and DEVICEPATH).
+- Run the following commands in the terminal:
 ```
-# Replace (Note 1) and (Note 2) with noted values.  Keep quotes but not parenthesis
-MOUNTPOINT="(Note 1)"
-DEVICEPATH="(Note 2)"
-# DON'T MAKE CHANGES BELOW THIS LINE
-sudo umount $MOUNTPOINT
-sudo mkdir /ebincard
-sudo mkfs -t ext4 $DEVICEPATH
-sudo mount $DEVICEPATH /ebincard
-cd /ebincard
-sudo tar -xvf /home/pi/rootfs.tar.bz2
-cd /home/pi
-sudo umount /ebincard
-sudo rm -rf /ebincard
+wget https://github.com/ChameleonGeek/ebin-kodi/raw/master/ebin-sd-pi.sh
+chmod +x ebin-sd-pi.sh
+sudo sh ebin-sd-pi.sh
 ```
-- Open a terminal in Raspbian and paste the updated contents into the terminal.
-- Once the terminal has finished processing, the MicroSD card reader can be disconnected from the Raspberry Pi without further steps.
+- Once the terminal has finished processing and displays success, the MicroSD card reader can be disconnected from the Raspberry Pi without further steps.
 
 ## 2.  Prep the EspressoBin to boot from MicroSD card
 - Install the prepped MicroSD card into the EspressoBin.
@@ -93,7 +76,7 @@ update-rc.d ondemand disable
 # Temporary hostname to eliminate hosts file errors
 # The user will have the option to update later
 echo 'kodiserver' > /etc/hostname
-echo -e '127.0.0.1\tkodiserver' > /etc/hosts
+echo -e "127.0.0.1\tkodiserver" > /etc/hosts
 
 # CONFIGURE INITIAL NETWORK CONNECTION
 echo 'auto eth0' > /etc/network/interfaces
@@ -109,7 +92,7 @@ echo -e "\tnetmask $NET_MASK" >> /etc/network/interfaces
 echo -e "\tnetwork $NETWORK" >> /etc/network/interfaces
 echo -e "\tbroadcast $BROADCAST" >> /etc/network/interfaces
 echo -e "\tgateway $GATEWAY" >> /etc/network/interfaces
-echo 'dns-nameservers 8.8.8.8' >> /etc/network/interfaces
+echo -e "\tdns-nameservers 8.8.8.8" >> /etc/network/interfaces
 echo '' >> /etc/network/interfaces
 echo 'pre-up /sbin/ifconfig lan1 up' >> /etc/network/interfaces
 echo 'pre-up /sbin/ifconfig eth0 up' >> /etc/network/interfaces
@@ -129,7 +112,7 @@ sudo apt-get install wget -y
 ```
 - Download, prep and run main configuration script
 ```
-wget https://github.com/ChameleonGeek/ebin-kodi/ebin-kodi.sh
+wget https://raw.githubusercontent.com/ChameleonGeek/ebin-kodi/master/ebin-kodi.sh
 chmod +x ebin-kodi.sh
 sudo sh ebin-kodi.sh
 ```
@@ -140,9 +123,11 @@ sudo sh ebin-kodi.sh
 - Cofiguring phpmyadmin
   - Ensure apache2 is selected (spacebar) and hit enter
   - Select yes when asked whether to use dbconfig-common to set up the database
-  - Enter the MySQL root password you created earlier in this script
-  - Enter and confirm a password for the phpMyAdmin application itself
-
+  - Enter and confirm a password for the phpMyAdmin application to connect to MySQL.  You can let phpMyAdmin create a random password.  As a user or DBA, you won't need to use this password.
+- Interactive User:
+  - The root account shouldn't be used for routine interactions with the EspressoBin.  Enter a user name and password for this interactive account and answer the Ubuntu user information questions.
+- Root User:
+  - By default, Ubuntu sets the root account with no password.  This account should be password protected.  This should not be the same password as the interactive user.
 ## 5.  Configuration cleanup via Webmin
 - Open a web browser and navigate to https://[espressobin ip address]:10000
 - Enter the username and password created while running the script and click "Sign In"
