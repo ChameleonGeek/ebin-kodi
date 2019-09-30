@@ -27,14 +27,21 @@ RED='\033[1;31m'
 YEL='\033[1;33m'
 NC='\033[0m' # No Color
 
+HOST="kodiserver"
+IP_ADDRESS="192.168.0.124"
+NET_MASK="255.255.255.0"
+NETWORK="192.168.0.0"
+BROADCAST="192.168.0.255"
+GATEWAY="192.168.0.1"
+
 GetHostName(){
 	splash "Give this system a name"
-	NEWHOST=$(whiptail --title "HOSTNAME" --inputbox "Enter a name for this system" 8 78 "" 3>&1 1>&2 2>&3)
+	HOST=$(whiptail --title "HOSTNAME" --inputbox "Enter a name for this system" 8 78 "$HOST" 3>&1 1>&2 2>&3)
 	exitstatus=$?
-	if [ $exitstatus = 0 ]; then
-		if(whiptail --title "Confirm Host Name" --yesno "You entered $NEWHOST.  Is this correct?" 8 78) then
-			echo "$NEWHOST" > /etc/hostname
-			echo -e "127.0.0.1\t$NEWHOST" > /etc/hosts
+	if [ $exitstatus == 0 ]; then
+		if(whiptail --title "Confirm Host Name" --yesno "You entered $HOST.  Is this correct?" 8 78) then
+			echo -e "127.0.0.1\t$HOST" > /etc/hosts
+			echo "$HOST" > /etc/hostname
 		else
 			GetHostName
 		fi
@@ -45,11 +52,13 @@ GetNewUser(){
 	splash "Create user to interact with the EspressoBin"
 	NEWUSER=$(whiptail --title "Interactive User" --inputbox "Enter (new) user name to interact with the EspressoBin" 8 78 "" 3>&1 1>&2 2>&3)
 	exitstatus=$?
-	if [ $exitstatus = 0 ]; then
+	if [ $exitstatus == 0 ]; then
 		if(whiptail --title "Confirm User Name" --yesno "You entered $NEWUSER.  Is this correct?" 8 78) then
 			splash "Adding User $NEWUSER - Please answer the questions"
 			sudo adduser $NEWUSER
 			sudo usermod -aG sudo $NEWUSER
+			splash "This user ($NEWUSER) needs to be added to Samba."
+			sudo smbpasswd -a "${NEWUSER}"
 			splash "The root user needs password protection"
 			sudo passwd root
 		else
@@ -90,8 +99,11 @@ SoftwareInstall(){
 		sudo apt-get update
 		sudo apt-get upgrade -y
 			
+		# Update timezone
+		sudo dpkg-reconfigure tzdata
+		
 		splash "Installing utilities"
-		sudo apt-get install nano python3-pip tasksel openssh-server -y
+		sudo apt-get install nano python3-pip tasksel -y
 		
 		# Suggested changes to /etc/ssh/sshd_config:
 		# LoginGraceTime 20
@@ -117,9 +129,6 @@ SoftwareInstall(){
 		sudo systemctl restart apache2
 
 		
-		# Update timezone
-		sudo dpkg-reconfigure tzdata
-		
 		echo "1" > install-complete
 	fi
 }
@@ -135,9 +144,9 @@ SoftwareInstall(){
 # ==============================================================================
 # ==============================================================================
 # Update EspressoBin hostname to remove "unable to resolve host localhost.localdomain: Connection refused" notices
-# This is done early to prevent user concerns
-GetHostName
 # Install the software
 SoftwareInstall
 # Create a user other than root with superuser permissions
 GetNewUser
+# Update Host Name
+GetHostName
