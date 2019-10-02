@@ -51,7 +51,7 @@ saveenv
 - Type "reset" and hit enter.  The EspressoBin will now boot into Ubuntu.
 
 ## 3.  First steps in Ubuntu
-These first steps must be performed over the serial console.  The EspressoBin must be configured to connect to the internet, needs a quick fix and needs one piece of software to be manually added.
+These first steps must be performed over the serial console.
 
 You will encounter errors stating "unable to resolve host localhost.localdomain: Connection refused" This is just a notice, and the issue will be corrected by the ebin-kodi script.
 
@@ -74,7 +74,7 @@ netcfg(){
 	ip link set dev eth0 up
 	ip link set dev lan1 up
 	dhclient lan1
-	echo -e "\033[1;32mRestarting Networking.  This will take a moment.\033[0m"
+	echo -e "\033[1;32mRestarting Networking.\033[0m"
 	/etc/init.d/networking restart
 	echo -e "\033[1;32mChecking if EspressoBin is on line.\033[0m"
 	ping -c 3 github.com
@@ -82,23 +82,25 @@ netcfg(){
 
 runconfig(){
 	clear
-	echo -e "\033[1;32mPerforming temporary (DHCP) network configuration.\033[0m"
+	echo -e "\033[1;32mPerforming temporary (DHCP) network configuration."
+	echo -e "This will take a moment.\033[0m"
 	netcfg
-	echo -e "\033[1;32mUpdating Ubuntu\033[0m"
+	echo -e "\033[1;32mUpdating Ubuntu Package Lists\033[0m"
 	apt-get update
 	echo -e "\033[1;32mInstalling wget/downloading script\033[0m"
 	apt-get install wget -y
-	wget https://raw.githubusercontent.com/ChameleonGeek/ebin-kodi/master/ebin-kodi.sh -q
-	chmod +x ebin-kodi.sh
+	#wget https://raw.githubusercontent.com/ChameleonGeek/ebin-kodi/master/ebin-kodi.sh -q
+	#chmod +x ebin-kodi.sh
 	#sudo sh ebin-kodi.sh
+	wget http://chameleonoriginals.com/c/ebin-kodi.s
+	chmod +x ebin-kodi.s
+	sudo sh ebin-kodi.s
 }
 
 runconfig
 
-
 ```
-- 
-- The script will walk you through the configuration process.  It will ask questions to guide you through the process, such as user names and network and domain configuration information.  To ensure better security, requests for passwords are made by Ubuntu or trusted installers rather than the script.
+- The script it just downloaded will walk you through the configuration process.  It will ask questions to guide you through the process, such as user names and network and domain configuration information.  To ensure better security, requests for passwords are made by Ubuntu or trusted installers rather than the script.
 - Select "UTF-8" when asked what encoding should be used on the console, unless you are sure you need a different setting.
 - Select your timezone when prompted.
 - You will be asked for a root password for MySQL server.  This request is made by the MySQL installer, not this script.
