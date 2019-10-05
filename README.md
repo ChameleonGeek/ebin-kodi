@@ -12,22 +12,7 @@ This project will install several necessary programs such as:
 - Open SSH Server which removes the USB tether for further configuration and management
 
 ## 1.  Prepare the MicroSD card
-Since this project is intended to be paired with a Raspberry Pi, you should have one on hand.  Windows lacks the toolchain to properly prepare the card without long-lasting headaches, but Raspbian has what's needed.  These steps have been developed on a Raspberry Pi, and should be valid in most Linux distributions. **A USB MicroSD card reader is needed to prep the MicroSD card.**
-- Boot the Raspberry pi with a functional Raspbian OS.
-  - The Raspberry Pi Foundation has easy-to follow instructions using Windows/Apple/Linux at https://projects.raspberrypi.org/en/projects/raspberry-pi-setting-up
-- If you encounter issues preparing the MicroSD card for the Espressobin, start over by following the steps above and just create a second Raspbian image, which will be overwritten as you proceed.
-- Connect the MicroSD card reader to the USB port of the Raspberry Pi. Select "open in file manager" in the popup once the MicroSD card is connected.  Note the path to the card displayed in the file manager (Mount Point).
-- Identify the device path of the MicroSD card *It **is not** /dev/mmcblk...*.  It is most likely /dev/sda1 (Device Path).
-```
-lsblk
-```
-- Run the following commands in the terminal:
-```
-wget https://github.com/ChameleonGeek/ebin-kodi/raw/master/ebin-sd-pi.sh
-chmod +x ebin-sd-pi.sh
-sudo sh ebin-sd-pi.sh
-```
-- Once the terminal has finished processing and displays success, the MicroSD card reader can be disconnected from the Raspberry Pi without further steps.
+Instructions for prepping the microSD card using a Raspberry Pi are [here](https://github.com/ChameleonGeek/ebin-kodi/blob/master/sd-prep.md).  These instructions should work on any Linux PC or Apple with minor adjustments.
 
 ## 2.  Prep the EspressoBin to boot from MicroSD card
 - Install the prepped MicroSD card into the EspressoBin.
