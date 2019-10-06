@@ -1,17 +1,23 @@
 # ebin-kodi
 Configure an EspressoBin v7 into an Ubuntu 16.04 LTS server to support kodi media file storage and management
 
-This project configures a fresh, out of the box EspressoBin v7 SBC to support a Raspberry Pi-based home Kodi/OSMC media center among other file serving and management needs.  It is intended to supplement the lackluster EspressoBin documentation, and help Linux noobs quickly build a robust system.
+This project configures a fresh, out of the box EspressoBin v7 SBC to support a Raspberry Pi-based home Kodi/OSMC media center among other file serving and management needs.  It is intended to supplement the lackluster EspressoBin documentation, and help Linux noobs quickly build a robust system.  This process takes between 20 minutes and one hour depending upon how prepared the user is to answer configuration questions and which components are selected for installation.
 
 My goal is to create a step-by-step guide which can be followed by tech amateurs so that they can use the EspressoBin.  The poor state of the EspressoBin documentation may lead potential users to believe that the hardware is similarly lackluster, which is far from the truth.  I have been abusing my EspressoBin for more than a year, and it has handled everything I've thrown at it far better than I ever expected from the otherwise poor support. My EspressoBin has been proven capable of far more than simple file serving.  This project will give the user the option to install other software which will make the EspressoBin even more useful.
 
-This project will install several necessary programs such as:
-- wget, which allows the user to download (this project's) configuration script
-- Webmin, which allows a web-based configuration GUI for the EspressoBin
-- Samba Server, which manages file sharing
-- Open SSH Server which removes the USB tether for further configuration and management
+This project offers four configuration types, each with preselected and optional software:
+- Basic install - the simplest configuration with functional network configuration and minimal software installed
+- File Server - Samba file server with functional networking and a few software options
+- Domain Controller - The most software installed, with functional networking and configured as a Windows 2008 R2 compatible Domain Controller
+- Custom Installation - The most flexible option, with functional networking and lots of software choices
+
+Each of these main install types are explained in greater detail [here](https://github.com/ChameleonGeek/ebin-kodi/blob/master/config-script.md).
+
+Note that none of the optional software is completely configured once this process is complete.  Each main component has additional configuration options which are impossible to accommodate in a single script intended for distribution.  Webmin is an optionally installed element, and all final configuration can be accomplished through the Webmin Web-based interface.
 
 ## 1.  Prepare the MicroSD card
+After installation, the largest image created by this project is a bit less than 5GB.  I recommend at least 32GB of you intend to do more than basic file serving.
+
 Instructions for prepping the microSD card using a Raspberry Pi are [here](https://github.com/ChameleonGeek/ebin-kodi/blob/master/sd-prep.md).  These instructions should work on any Linux PC or Apple with minor adjustments.
 
 ## 2.  Prep the EspressoBin to boot from MicroSD card
