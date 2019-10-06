@@ -45,29 +45,27 @@ fi
 
 if ! [ -e 'rootfs.tar.bz2' ]; then
 	echo "The EspressoBin file system has not been extracted."
-	exit
+  exit
 fi
 
 # OS IMAGE HAS BEEN DOWNLOADED AND UNZIPPED.  NOW PREPARE THE SD CARD
-MOUNTPOINT=$(whiptail --title "Mount Point" --inputbox "Enter the current mount point" 8 78 "" 3>&1 1>&2 2>&3)
-esa=$?
 DEVICEPATH=$(whiptail --title "Device Path" --inputbox "Enter the device path for the SD card" 8 78 "/dev/sda1" 3>&1 1>&2 2>&3)
-esb=$?
+esa=$?
 
-if [ $esa = 0 ] && [ $esb = 0 ]; then
-	sudo umount "${MOUNTPOINT}"
-	sudo mkdir /ebincard
-	sudo mkfs -t ext4 "${DEVICEPATH}"
-	sudo mount "${DEVICEPATH}" /ebincard
-	cd /ebincard
-	sudo tar -xvf /home/pi/rootfs.tar.bz2
-	cd /home/pi
-	sudo umount /ebincard
-	sudo rm -rf /ebincard
-	echo "Card has been prepped and is safe to disconnect."
+if [ "$esa" = "0" ]; then
+  sudo umount "${DEVICEPATH}"
+  sudo mkdir /ebincard
+  sudo mkfs -t ext4 "${DEVICEPATH}"
+  sudo mount "${DEVICEPATH}" /ebincard
+  cd /ebincard
+  sudo tar -xvf /home/pi/rootfs.tar.bz2
+  cd /home/pi
+  sudo umount /ebincard
+  sudo rm -rf /ebincard
+  echo "Card has been prepped and is safe to disconnect."
 else
-	echo "Card prep failed."
-	if ![ -e 'ebin-ubuntu-16.04.3.zip' ]; then
-		echo "The image zip file has not been downloaded."
-	fi
+  echo "Card prep failed."
+  if ! [ -e 'ebin-ubuntu-16.04.3.zip' ]; then
+	  echo "The image zip file has not been downloaded."
+  fi
 fi
