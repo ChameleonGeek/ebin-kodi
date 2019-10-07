@@ -536,7 +536,6 @@ navinstallation(){
 		"Custom Configuration")
 			perfinstallcustom
 			;;
-			;;
 		"File Server")
 			perfinstallfilesvr
 			;;
