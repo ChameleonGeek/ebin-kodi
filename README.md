@@ -8,12 +8,11 @@ My goal is to create a step-by-step guide which can be followed by tech amateurs
 This project offers four configuration types, each with preselected and optional software:
 - Basic install - the simplest configuration with functional network configuration and minimal software installed
 - File Server - Samba file server with functional networking and a few software options
-- Domain Controller - The most software installed, with functional networking and configured as a Windows 2008 R2 compatible Domain Controller
 - Custom Installation - The most flexible option, with functional networking and lots of software choices
 
 Each of these main install types are explained in greater detail [here](https://github.com/ChameleonGeek/ebin-kodi/blob/master/config-script.md).
 
-Note that none of the optional software is completely configured once this process is complete.  Each main component has additional configuration options which are impossible to accommodate in a single script intended for distribution.  Webmin is an optionally installed element, and all final configuration can be accomplished through the Webmin Web-based interface.
+***Note that none of the optional software is completely configured once this process is complete.***  Each main component has additional configuration options which are impossible to accommodate in a single script intended for distribution.  Webmin is an optionally installed element, and all final configuration can be accomplished through the Webmin Web-based interface.
 
 ## 1.  Prepare the MicroSD card
 After installation, the largest image created by this project is a bit less than 5GB.  I recommend at least 32GB of you intend to do more than basic file serving.
@@ -41,83 +40,99 @@ saveenv
 ```
 - Type "reset" and hit enter.  The EspressoBin will now boot into Ubuntu.
 
-## 3.  First steps in Ubuntu
+## 3. Configuring the EspressoBin with espressobin.sh
+
 These first steps must be performed over the serial console.
 
-You will encounter errors stating "unable to resolve host localhost.localdomain: Connection refused" This is just a notice, and the issue will be corrected by the ebin-kodi script.
+On first boot, the EspressoBin won't automatically connect to your network and is running an extremely lean Ubuntu OS with very few tools.  Two scripts have been created to make the EspressoBin much more useful.  The first starts up networking on the EspressoBin, installs wget to download the larger script, and then executes the larger script.  The second script gives you a lot of flexibiity, installing one of four main configurations with the option to install more software.
 
-- Log in to Ubuntu.  The initial user is "root" with no password.  We'll give root a password later, but not during the first steps.
-- Copy the code below and paste into the terminal. This code will configure the EspressoBin to use DHCP, will update software sources and download/run the main configuration script.  _This script will make some temporary network settings (DHCP/temporary hostname). The main script will allow you to change this initial configuration later._
+This step assumes that you have just completed step 2 and haven't made _any_ updates to the EspressoBin.  Any changes you make to the EspressoBin before running the scripts may interfere with the script.  The script will:
+- Ask which primary configuration type you want to install
+- Ask for network configuration information, which will be implemented and tested
+- Require that you create an interactive user other than root, with sudo permissions.  It secures both the root user and the interactive user with a password
+
+***I strongly advise you opt to install webmin if you are not highly accustomed to working with the Linux command line.  Webmin creates a web-based GUI that you can use to install updates, install new software and configure options in tools like Samba, FTP and SSH***
+
+Log into Ubuntu on the the EspressoBin.  The user is "root" with no password.  An interactive user will be created by the script, and you will be rquired to give root a password.
+
+#### Basic Install
+The Basic Install performs the least configuration, essentially setting up the EspressoBin as a basic Ubuntu 16.04 LTS server with a few tools to make further management and upgrade easier.
+- It asks if you want to install Webmin
+- It adds "universe" repositories to the sources list, which allows a broader selection of software through apt-get
+- It performs apt-get upgrade to ensure that all installed software is up-to-date
+- It installs the nano text editor for easier editing of files from the terminal
+- It installs pip for Python3, which is already installed on the EspressoBin
+- It installs tasksel, which makes it easier to install larger server softare suites
+
+#### File Server
+The File Server Install configures the EspressoBin as a Samba File Server with the option to install additional tools
+- It offers all of the options/automatically installed software in the Basic Install
+- It allows the installation of OpenSSH server
+- It installs Samba File Server and adds the interactive user as a Samba user.
+
+#### Custom Install
+This option gives the greatest flexibility, offering a number of packages to install
+- It offers all of the options/automatically installed software in the Basic Install
+- It also offers the installation of:
+  - Samba File Server (adding the interactive user as a Samba user)
+  - LAMP web server suite
+  - MySQL if LAMP is not selected
+  - phpMyAdmin if mySQL is installed separately or as part of LAMP
+  - OpenSSH server
+  - OpenVPN server
+
+## The first script
+On first boot, the EspressoBin can't download anything without performing multiple steps ahead of time.  Copy the following and paste it into the terminal on the EspressoBin.  It will prep the EspressoBin so that it can download and execute the larger configuration script.
 ```
-qry(){
-	t=$(whiptail --title "$2" --inputbox "$3" 8 78 "$1" 3>&1 1>&2 2>&3)
-	echo "$t" > "${2}"
-	echo "$t"
-}
-
-# CONFIGURE INITIAL NETWORK CONNECTION
-netcfg(){
-	# Temporary hostname to eliminate hosts file errors
-	# The user will have the option to update later
-	echo 'kodiserver' > /etc/hostname
-	echo -e "127.0.0.1\tkodiserver" > /etc/hosts
-
+preconfig(){
+	clear
+	echo "Starting networking.  This will take a moment"
 	ip link set dev eth0 up
 	ip link set dev lan1 up
 	dhclient lan1
-	echo -e "\033[1;32mRestarting Networking.\033[0m"
-	/etc/init.d/networking restart
-	echo -e "\033[1;32mChecking if EspressoBin is on line.\033[0m"
-	ping -c 3 github.com
-}
-
-runconfig(){
-	clear
-	echo -e "\033[1;32mPerforming temporary (DHCP) network configuration."
-	echo -e "This will take a moment.\033[0m"
-	netcfg
-	echo -e "\033[1;32mUpdating Ubuntu Package Lists\033[0m"
 	apt-get update
-	echo -e "\033[1;32mInstalling wget/downloading script\033[0m"
+	sleep 5
 	apt-get install wget -y
-	#wget https://raw.githubusercontent.com/ChameleonGeek/ebin-kodi/master/ebin-kodi.sh -q
-	#chmod +x ebin-kodi.sh
-	#sudo sh ebin-kodi.sh
-	wget http://chameleonoriginals.com/c/ebin-kodi.s
-	chmod +x ebin-kodi.s
-	sudo sh ebin-kodi.s
+	
+	wget https://raw.githubusercontent.com/ChameleonGeek/ebin-kodi/master/espressobin.sh
+	chmod +x espressobin.sh
+	bash espressobin.sh
 }
-
-runconfig
+preconfig
 
 ```
-- The script it just downloaded will walk you through the configuration process.  It will ask questions to guide you through the process, such as user names and network and domain configuration information.  To ensure better security, requests for passwords are made by Ubuntu or trusted installers rather than the script.
-- Select "UTF-8" when asked what encoding should be used on the console, unless you are sure you need a different setting.
-- Select your timezone when prompted.
-- You will be asked for a root password for MySQL server.  This request is made by the MySQL installer, not this script.
-  - **Write down or remember this password**
-- Cofiguring phpmyadmin
-  - Ensure apache2 is selected (spacebar) and hit enter
-  - Select yes when asked whether to use dbconfig-common to set up the database
-  - Enter and confirm a password for the phpMyAdmin application to connect to MySQL.  You can let phpMyAdmin create a random password.  As a user or DBA, you won't need to use this password.
-- Interactive User:
-  - The root account shouldn't be used for routine interactions with the EspressoBin.  Enter a user name and password for this interactive account and answer the Ubuntu user information questions.
-  - **Write down or remember this username and password.  It is the interactive superuser account.**
-- Root User:
-  - By default, Ubuntu sets the root account with no password.  This account should be password protected.  This should not be the same password as the interactive user.
-  - **Write down or remember this user name and password.**
+This code will enable a DHCP connection to your network (which will be changed to static IP later), update available package lists, install wget, then download and execute the main configuration script.
+
+## The second script
+The second script will start automatically as soon as it is downloaded.  It starts asking a series of questions, which will change according to what you select.  I have made efforts to concentrate as many questions as possible at the beginning of the process.  The first set of questions should be relatively self-explanatory.  As the installation and configuration progresses, some of the questions asked by installed tools may be a bit less self-explanatory.  Here are some recommendations for answering these questions:
+
+#### Console Encoding:
+Unless you know you should select otherwise, select "UTF-8."  This is the setting currently being used in your connection between the EspressoBin and your PC.
+
+#### mySQL root Password:
+Enter a password for the mySQL user "root."  The mySQL server shouldn't have a blank password for this user, and shouldn't have the same password as any Ubuntu user.  This password can be changed later if desired via the terminal, Webmin or phpMyAdmin. 
+
+***Write down or remember this password***
+
+#### Cofiguring phpMyAdmin:
+- Ensure apache2 is selected (spacebar) and hit enter.
+- Select yes when asked whether to use dbconfig-common to set up the database
+- Enter and confirm a password for the phpMyAdmin application to connect to mySQL. You can let phpMyAdmin create a random password. ***As a user or DBA, you won't need to use this password.***
+
+#### Interactive User:
+The root account shouldn't be used for routine interactions with the EspressoBin. Enter a user name and password for this interactive account and answer the Ubuntu user information questions.
+***Write down or remember this username and password. It is the interactive superuser account.***
+
+#### Root User:
+By default, Ubuntu sets the root account with no password. This account should be password protected. This should not be the same password as the interactive user.
+***Write down or remember this password.***
+
 ## 4.  Configuration cleanup via Webmin
 - Open a web browser and navigate to https://[espressobin ip address]:10000
 - Enter the interactive user name and password created while running the script and click "Sign In"
 - The webmin dashboard will load.  On the left of the page, click "Refresh Modules."  This will ensure that the proper modules display in the "Servers" section at the left.
+- Any of the components installed by this project can be administered and configured via the webmin interface.
 
 ## 5.  Do what you want with the EspressoBin
-- A LAMP (Linux-Apache-MySQL-PHP) server is installed and can be browsed at http://[espressobin ip address]
-- MySQL has been installed
-  - phpMyAdmin is a web-based MySQL management tool, which can be accessed at http://[espressobin ip address]/phpmyadmin
-- Webmin is a web-based administrative console, which can be accessed at https://[espressobin ip address]:10000
-  - Most web browsers will complain that the EspressoBin's SSL certificate is not secure.  This is OK, even if annoying.
-  - Login with the username and password you created during the script (not root)
-  - Webmin has modules which manage connecting and (auto) mounting external drives, managing Samba file sharing, Open SSH access and many other functions.
-  - Webmin allows you to install security and program updates without the need to understand Linux bash commands.
-- Python3 is already installed as part of the base Ubuntu image.  Python3 pip has been installed to permit the addition of other Python modules.
+- If you installed LAMP, the EspressoBin's web server can be viewed at http://[espressobin ip address]
+- If you installed phpMyAdmin, it can be viewed at http://[espressobin ip address]/phpmyadmin
