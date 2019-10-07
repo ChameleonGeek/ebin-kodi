@@ -2,10 +2,10 @@
 # ==============================================================================
 # ==============================================================================
 # 
-#							 EspressoBin Config
-#						   Kodi/OSMC Media Server
-#							  September, 2019
-#				   https://github.com/ChameleonGeek/ebin-kodi
+#                               EspressoBin Config
+#                             Kodi/OSMC Media Server
+#                                September, 2019
+#                   https://github.com/ChameleonGeek/ebin-kodi
 # 
 #	 This script performs the basic software installation and configuration 
 # necessary to make a new EspressoBin v7 into an Ubuntu 16.04 LTS server with 
@@ -21,7 +21,7 @@
 # ==============================================================================
 
 # ==========================================================
-#												  VARIABLES
+#                                                  VARIABLES
 # ==========================================================
 BLU='\033[1;34m'   # Makes on-screen text blue
 CYA='\033[1;36m'   # Makes on-screen text cyan
@@ -33,7 +33,7 @@ YEL='\033[1;33m'   # Makes on-screen text yellow
 
 
 # ==========================================================
-#										   MANAGE VARIABLES
+#                                           MANAGE VARIABLES
 # ==========================================================
 sed_escape() {
   sed -e 's/[]\/$*.^[]/\\&/g'
@@ -65,7 +65,7 @@ varLC(){
 }
 
 # ==========================================================
-#							 IPV4 NETWORK ADDRESS FUNCTIONS
+#                             IPV4 NETWORK ADDRESS FUNCTIONS
 # ==========================================================
 ip2int(){
 	local a b c d
@@ -101,7 +101,7 @@ network(){
 }
 
 # ==========================================================
-#								   USER INTERFACE FUNCTIONS
+#                                   USER INTERFACE FUNCTIONS
 # ==========================================================
 alert(){ echocolor "${RED}" "$1"; }
 
@@ -169,7 +169,7 @@ yesnoinstall(){
 	cfg_write "$2" "$ret"
 }
 # ==========================================================
-#									ALTER AND TEST SETTINGS
+#                                    ALTER AND TEST SETTINGS
 # ==========================================================
 dhcpnetstart(){
 	note "Performing temporary network setup (DHCP).  This will take a moment."
@@ -276,7 +276,7 @@ setwebminsources(){
 }
 
 # ==========================================================
-#												 INSTALLERS
+#                                                 INSTALLERS
 # ==========================================================
 loginstall(){ echo "$1" >> installed.list; }
 
@@ -365,7 +365,7 @@ installwebmin(){
 }
 
 # ==========================================================
-#									   INSTALLATION PROMPTS
+#                                       INSTALLATION PROMPTS
 # ==========================================================
 queryinstalltype(){
 	ret="$(whiptail --title "CONFIGURATION TYPE" --radiolist "Select the configuration type:" \
@@ -444,7 +444,7 @@ queryvpn(){ yesnoinstall "OpenVPN Server" "OPENVPN"; }
 querywebmin(){ yesnoinstall "Webmin server management" "WEBMIN"; }
 
 # ==========================================================
-#									  CONFIGURATION PROMPTS
+#                                      CONFIGURATION PROMPTS
 # ==========================================================
 queryconfigdata(){
 	note "Collecting system settings"
@@ -522,7 +522,7 @@ queryhostname(){ # <default value> <whiptail title> <prompt>
 	cfg_write "HOSTNAME" "$(querystringconfirm "$(hostname)" "Host Name" "Enter the Host Name for this system")"
 }
 # ==========================================================
-#						 INSTALL REQUIRED/SELECTED PROGRAMS
+#                         INSTALL REQUIRED/SELECTED PROGRAMS
 # ==========================================================
 navinstallation(){
 	sethostname
@@ -614,7 +614,7 @@ userupdates(){
 
 }
 # ==========================================================
-#											EXEC NAVIGATION
+#                                            EXEC NAVIGATION
 # ==========================================================
 
 firstrun(){
@@ -628,6 +628,10 @@ firstrun(){
 	queryinstalltype
 	queryconfigdata
 	navinstallation
+	note "Installation and configuration is complete."
+	rm cfginfo.cfg
+	rm installed.list
+	rm "$0"
 }
 
 firstrun
