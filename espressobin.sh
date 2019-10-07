@@ -2,16 +2,16 @@
 # ==============================================================================
 # ==============================================================================
 # 
-#                             EspressoBin Config
-#                           Kodi/OSMC Media Server
-#                              September, 2019
-#                   https://github.com/ChameleonGeek/ebin-kodi
+#							 EspressoBin Config
+#						   Kodi/OSMC Media Server
+#							  September, 2019
+#				   https://github.com/ChameleonGeek/ebin-kodi
 # 
-#     This script performs the basic software installation and configuration 
+#	 This script performs the basic software installation and configuration 
 # necessary to make a new EspressoBin v7 into an Ubuntu 16.04 LTS server with 
 # various software necessary to support a Kodi/OSMC media center.
 # 
-#     This script is the fourth step of configuring the EspressoBin.  It expects
+#	 This script is the fourth step of configuring the EspressoBin.  It expects
 # that the EspressoBin has been configured to boot to MicroSD, it has a MicroSD 
 # card with a prevously untouched Ubuntu 16.04 LTS image installed, which has 
 # been configured per the instructions at 
@@ -21,19 +21,19 @@
 # ==============================================================================
 
 # ==========================================================
-#                                                  VARIABLES
+#												  VARIABLES
 # ==========================================================
 BLU='\033[1;34m'   # Makes on-screen text blue
 CYA='\033[1;36m'   # Makes on-screen text cyan
 GRN='\033[1;32m'   # Makes on-screen text green
 MAG='\033[1;35m'   # Makes on-screen text magenta
-NC='\033[0m'       # Makes on-screen text default (white)
+NC='\033[0m'	   # Makes on-screen text default (white)
 RED='\033[1;31m'   # Makes on-screen text red
 YEL='\033[1;33m'   # Makes on-screen text yellow
 
 
 # ==========================================================
-#                                           MANAGE VARIABLES
+#										   MANAGE VARIABLES
 # ==========================================================
 sed_escape() {
   sed -e 's/[]\/$*.^[]/\\&/g'
@@ -65,43 +65,43 @@ varLC(){
 }
 
 # ==========================================================
-#                             IPV4 NETWORK ADDRESS FUNCTIONS
+#							 IPV4 NETWORK ADDRESS FUNCTIONS
 # ==========================================================
 ip2int(){
-    local a b c d
-    { IFS=. read a b c d; } <<< $1
-    echo $(((((((a << 8) | b) << 8) | c) << 8) | d))
+	local a b c d
+	{ IFS=. read a b c d; } <<< $1
+	echo $(((((((a << 8) | b) << 8) | c) << 8) | d))
 }
 
 int2ip(){
-    local ui32=$1; shift
-    local ip n
-    for n in 1 2 3 4; do
-        ip=$((ui32 & 0xff))${ip:+.}$ip
-        ui32=$((ui32 >> 8))
-    done
-    echo $ip
+	local ui32=$1; shift
+	local ip n
+	for n in 1 2 3 4; do
+		ip=$((ui32 & 0xff))${ip:+.}$ip
+		ui32=$((ui32 >> 8))
+	done
+	echo $ip
 }
 
 netmask(){
-    local mask=$((0xffffffff << (32 - $1))); shift
-    int2ip $mask
+	local mask=$((0xffffffff << (32 - $1))); shift
+	int2ip $mask
 }
 
 broadcast(){
-    local addr=$(ip2int $1); shift
-    local mask=$((0xffffffff << (32 -$1))); shift
-    int2ip $((addr | ~mask))
+	local addr=$(ip2int $1); shift
+	local mask=$((0xffffffff << (32 -$1))); shift
+	int2ip $((addr | ~mask))
 }
 
 network(){
-    local addr=$(ip2int $1); shift
-    local mask=$((0xffffffff << (32 -$1))); shift
-    int2ip $((addr & mask))
+	local addr=$(ip2int $1); shift
+	local mask=$((0xffffffff << (32 -$1))); shift
+	int2ip $((addr & mask))
 }
 
 # ==========================================================
-#                                   USER INTERFACE FUNCTIONS
+#								   USER INTERFACE FUNCTIONS
 # ==========================================================
 alert(){ echocolor "${RED}" "$1"; }
 
@@ -121,27 +121,26 @@ queryconfirm(){
 			ci="$(yesno "Confirm Install" "You chose NOT to install $1. Is this correct?")"
 		fi
 	done
-
 }
 
 querystring(){
-    # Usage: Query <default value> <whiptail title> <prompt>
-    retval=$(whiptail --title "$2" --inputbox "$3" 8 78 "$1" 3>&1 1>&2 2>&3)
+	# Usage: Query <default value> <whiptail title> <prompt>
+	retval=$(whiptail --title "$2" --inputbox "$3" 8 78 "$1" 3>&1 1>&2 2>&3)
 	exitstatus=$?
 	if [ "$exitstatus" = "0" ]; then
-	    echo "$retval"
+		echo "$retval"
 	else
-	    echo ""
+		echo ""
 	fi
 }
 
 yesno(){
 	# Uses whiptail to ask user yes/no questions
-    if (whiptail --title "$1" --yesno "$2" 8 78 3>&1 1>&2 2>&3) then
-        echo "1"
-    else
-        echo "0"
-    fi
+	if (whiptail --title "$1" --yesno "$2" 8 78 3>&1 1>&2 2>&3) then
+		echo "1"
+	else
+		echo "0"
+	fi
 }
 
 yesnoconfirm(){
@@ -170,7 +169,7 @@ yesnoinstall(){
 	cfg_write "$2" "$ret"
 }
 # ==========================================================
-#                                    ALTER AND TEST SETTINGS
+#									ALTER AND TEST SETTINGS
 # ==========================================================
 dhcpnetstart(){
 	note "Performing temporary network setup (DHCP).  This will take a moment."
@@ -178,9 +177,9 @@ dhcpnetstart(){
 	ip link set dev lan1 up
 	dhclient lan1
 	if [ "$(onlinecheck)" ]; then
-	    note "System is online"
+		note "System is online"
 	else
-	    note "System is offline"
+		note "System is offline"
 	fi
 }
 
@@ -194,23 +193,13 @@ killfirst(){
 
 onlinecheck(){
 	note "Checking if EspressoBin is on line."
-    res="$(ping -q -w1 -c1 github.com &>/dev/null && echo 1 || echo 0)"
+	res="$(ping -q -w1 -c1 github.com &>/dev/null && echo 1 || echo 0)"
 	if [ "$res" = "1" ]; then
 		note "System is online"
 	else
 		alert "System is offline"
 	fi
 	return $res
-}
-
-prepfirst(){
-	# Sets the system to run this script on reboot, so that it can quickly
-	# complete configuration without excessive user interaction
-	if ! [ -e "cfginfo.cfg" ]; then
-		echo '#!/bin/bash' > /etc/profile.d/ebin.sh
-		echo "bash /root/espressobin.s" >> /etc/profile.d/ebin.sh
-		chmod +x /etc/profile.d/ebin.sh
-	fi
 }
 
 sethostname(){
@@ -229,28 +218,29 @@ sethostname(){
 	/etc/init.d/hostname.sh restart
 }
 
-setipconfig(){    note "Setting up static networking for testing"
-    echo 'auto eth0' > /etc/network/interfaces
-    echo 'iface eth0 inet manual' >> /etc/network/interfaces
-    echo '' >> /etc/network/interfaces
-    echo 'auto lo' >> /etc/network/interfaces
-    echo 'iface lo inet loopback' >> /etc/network/interfaces
-    echo '' >> /etc/network/interfaces
-    echo 'auto lan1' >> /etc/network/interfaces
-    echo 'iface lan1 inet static' >> /etc/network/interfaces
-    echo -e "\taddress $(cfg_read "IP Address")" >> /etc/network/interfaces
-    echo -e "\tnetmask $(cfg_read "Network Mask")" >> /etc/network/interfaces
-    echo -e "\tgateway $(cfg_read "Default Gateway")" >> /etc/network/interfaces
-    echo -e "\tdns-nameservers $(cfg_read "DNS Servers")" >> /etc/network/interfaces
-    echo '' >> /etc/network/interfaces
-    echo 'pre-up /sbin/ifconfig lan1 up' >> /etc/network/interfaces
+setipconfig(){	note "Setting up static networking for testing"
+	echo 'auto eth0' > /etc/network/interfaces
+	echo 'iface eth0 inet manual' >> /etc/network/interfaces
+	echo '' >> /etc/network/interfaces
+	echo 'auto lo' >> /etc/network/interfaces
+	echo 'iface lo inet loopback' >> /etc/network/interfaces
+	echo '' >> /etc/network/interfaces
+	echo 'auto lan1' >> /etc/network/interfaces
+	echo 'iface lan1 inet static' >> /etc/network/interfaces
+	echo -e "\taddress $(cfg_read "IP Address")" >> /etc/network/interfaces
+	echo -e "\tnetmask $(cfg_read "Network Mask")" >> /etc/network/interfaces
+	echo -e "\tgateway $(cfg_read "Default Gateway")" >> /etc/network/interfaces
+	echo -e "\tdns-nameservers $(cfg_read "DNS Servers")" >> /etc/network/interfaces
+	echo '' >> /etc/network/interfaces
+	echo 'pre-up /sbin/ifconfig lan1 up' >> /etc/network/interfaces
 	
 	ip addr flush lan1
 	systemctl restart networking.service
 	echo "1"
 }
+
 setsources(){
-    # Updates repositories to allow a wider set of software than is supported by 
+	# Updates repositories to allow a wider set of software than is supported by 
 	# EspressoBin base Ubuntu install
 	# ADD UNIVERSE SOURCES
 	note "Updating Repositories."
@@ -269,10 +259,10 @@ setwebminsources(){
 	note "Adding Webmin repositories"
 	found=$(grep "download.webmin.com" /etc/apt/sources.list)
 	if [ "$found" = "" ]; then
-	    echo "deb http://download.webmin.com/download/repository sarge contrib" >> /etc/apt/sources.list
-    fi
-    found=$(grep "webmin.mirror" /etc/apt/sources.list)
-    if [ "$found" = "" ]; then
+		echo "deb http://download.webmin.com/download/repository sarge contrib" >> /etc/apt/sources.list
+	fi
+	found=$(grep "webmin.mirror" /etc/apt/sources.list)
+	if [ "$found" = "" ]; then
 		echo "deb http://webmin.mirror.somersettechsolutions.co.uk/repository sarge contrib" >> /etc/apt/sources.list
 	fi
 	
@@ -286,7 +276,7 @@ setwebminsources(){
 }
 
 # ==========================================================
-#                                                 INSTALLERS
+#												 INSTALLERS
 # ==========================================================
 loginstall(){ echo "$1" >> installed.list; }
 
@@ -330,7 +320,7 @@ installopenvpn(){
 
 installphpmyadmin(){
 	if ! [ "$(cfg_read PHPMYADMIN)" = "1" ] || ! [ "$(cfg_read LAMP)" = "1" ]; then return 0; fi
-    note "Installing phpMyAdmin"
+	note "Installing phpMyAdmin"
 	apt-get install phpmyadmin php-mbstring php-gettext -y 
 	note "Reinforcing phpMyAdmin Security"
 	phpenmod mcrypt
@@ -375,14 +365,13 @@ installwebmin(){
 }
 
 # ==========================================================
-#                                       INSTALLATION PROMPTS
+#									   INSTALLATION PROMPTS
 # ==========================================================
 queryinstalltype(){
 	ret="$(whiptail --title "CONFIGURATION TYPE" --radiolist "Select the configuration type:" \
 	12 78 5 \
 	"Basic Configuration" "Minimal configuration and installation" OFF \
 	"File Server" "Samba file server with Webmin server manager" ON \
-	"Domain Controller" "Windows 2008 R2 compatible Domain Controller" OFF \
 	"Custom Configuration" "Select components to install" OFF \
 	3>&1 1>&2 2>&3)"
 	cfg_write "INSTALL" "$ret"
@@ -426,7 +415,6 @@ querysubinstall(){
 			cfg_write "SAMBA" "1"
 			querywebmin
 			queryssh
-			#queryftp
 			;;
 		"Domain Controller")
 			cfg_write "LAMP" "1"
@@ -438,13 +426,10 @@ querysubinstall(){
 			;;
 		"Custom Configuration")
 			querywebmin
-			#queryftp
 			queryssh
 			queryvpn
 			querylamp
-			if [ "$(cfg_read "LAMP")" = "0" ]; then
-				querymysql
-			fi
+			if [ "$(cfg_read "LAMP")" = "0" ]; then querymysql; fi
 			querysamba
 			;;
 		*)
@@ -459,7 +444,7 @@ queryvpn(){ yesnoinstall "OpenVPN Server" "OPENVPN"; }
 querywebmin(){ yesnoinstall "Webmin server management" "WEBMIN"; }
 
 # ==========================================================
-#                                      CONFIGURATION PROMPTS
+#									  CONFIGURATION PROMPTS
 # ==========================================================
 queryconfigdata(){
 	note "Collecting system settings"
@@ -473,10 +458,10 @@ queryconfigdata(){
 }
 
 queryipbase(){
-    IP_ADDRESS="$(ifconfig | grep -A 1 'lan1' | tail -1 | cut -d ':' -f 2 | cut -d ' ' -f 1)"
-    NET_MASK="$(ifconfig lan1 | grep Mask | cut -d":" -f4)"
-    GATEWAY="$(ip route | grep 'default' | cut -d" " -f3)"
-    DNS_SVRS="$(grep nameserver /etc/resolv.conf | cut -d" " -f2)"
+	IP_ADDRESS="$(ifconfig | grep -A 1 'lan1' | tail -1 | cut -d ':' -f 2 | cut -d ' ' -f 1)"
+	NET_MASK="$(ifconfig lan1 | grep Mask | cut -d":" -f4)"
+	GATEWAY="$(ip route | grep 'default' | cut -d" " -f3)"
+	DNS_SVRS="$(grep nameserver /etc/resolv.conf | cut -d" " -f2)"
 
 	cfg_write "IP Address" "$(queryipconfig "$IP_ADDRESS" "IP Address" "Enter the static IP Address for this system.")"
 	cfg_write "Network Mask" "$(queryipconfig "$NET_MASK" "Network Mask" "Enter the Network Mask for this system.")"
@@ -493,7 +478,6 @@ querydomainfull(){
 		IFS='.' read -r -a DOMSET <<< "$retval"
 		if ! [ "${#DOMSET[@]}" = "2" ]; then querydomainfull; fi
 	done
-
 	echo "$retval"
 }
 
@@ -518,9 +502,7 @@ queryipconfig(){
 					queryipconfig
 				fi
 			done
-
 		fi
-
 	done
 	echo "$retval"
 }
@@ -540,7 +522,7 @@ queryhostname(){ # <default value> <whiptail title> <prompt>
 	cfg_write "HOSTNAME" "$(querystringconfirm "$(hostname)" "Host Name" "Enter the Host Name for this system")"
 }
 # ==========================================================
-#                         INSTALL REQUIRED/SELECTED PROGRAMS
+#						 INSTALL REQUIRED/SELECTED PROGRAMS
 # ==========================================================
 navinstallation(){
 	sethostname
@@ -554,8 +536,6 @@ navinstallation(){
 		"Custom Configuration")
 			perfinstallcustom
 			;;
-		"Domain Controller")
-			perfinstalldc
 			;;
 		"File Server")
 			perfinstallfilesvr
@@ -609,18 +589,6 @@ perfinstallcustom(){
 	installwebmin
 }
 
-perfinstalldc(){
-	note "Performing software installation: Domain Controller Install"
-	perfinstallrequired
-	installlamp
-	installmysql
-	installphpmyadmin
-	installftp
-	installssh
-	installopenvpn	
-	# Install DC Components
-}
-
 perfinstallfilesvr(){
 	note "Performing software installation: File Server Install"
 	perfinstallrequired
@@ -636,55 +604,31 @@ userupdates(){
 	
 	newuser="$(cfg_read "Interactive User")"
 	note "Adding Interactive User \"$newuser\""
-    adduser ${newuser}
+	adduser ${newuser}
 	usermod -aG sudo ${newuser}
 	
 	if [ "$(cfg_read "SAMBA")" = "1" ]; then
 		note "The user ($newuser) should be added to Samba."
-	    smbpasswd -a ${newuser}
+		smbpasswd -a ${newuser}
 
 	fi
 
 }
 # ==========================================================
-#                                            EXEC NAVIGATION
+#											EXEC NAVIGATION
 # ==========================================================
-secondrun(){
-    # Don't run if part one hasn't run
-	if ! [ -e cfginfo.cfg ]; then return 0; fi
-	note "Starting configuration script (part 2)"
-	if [ "$(cfg_read INSTALL)" = "Domain Controller" ]; then
-		note "Continuing Domain Controller Installation"
-		# newuser="$(cfg_read "Interactive User")"
-		# smbpasswd -a ${newuser}
-		
-		# installwebmin
-	fi
-}
 
 firstrun(){
-    if [ -e cfginfo.cfg ]; then return 0; fi
+	if [ -e cfginfo.cfg ]; then return 0; fi
 	# temporarily setting hostname to stop hostname resoluton warnings
 	note "Starting configuration script"
-	prepfirst
 	cfg_write "HOSTNAME" "kodiserver"
 	note "Starting network (DHCP).  This will take a moment"
 	dhcpnetstart # Start networking
 	sethostname
-	
 	queryinstalltype
 	queryconfigdata
-	
 	navinstallation
 }
 
-
-
-
-note "Starting Script (espressobin.sh)"
-
-secondrun # Try to run second part.  Will not run if part 1 not complete
-firstrun  # Try to run first part.  Will not run if part 1 is complete
-
-cat cfginfo.cfg
-
+firstrun
