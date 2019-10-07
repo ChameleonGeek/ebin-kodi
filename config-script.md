@@ -9,6 +9,8 @@ This step assumes that you have just completed step 2 and haven't made _any_ upd
 
 ***I strongly advise you opt to install webmin if you are not highly accustomed to working with the Linux command line.  Webmin creates a web-based GUI that you can use to install updates, install new software and configure options in tools like Samba, FTP and SSH***
 
+Log into Ubuntu on the the EspressoBin.  The user is "root" with no password.  An interactive user will be created by the script, and you will be rquired to give root a password.
+
 #### Basic Install
 The Basic Install performs the least configuration, essentially setting up the EspressoBin as a basic Ubuntu 16.04 LTS server with a few tools to make further management and upgrade easier.
 - It asks if you want to install Webmin
@@ -35,21 +37,6 @@ This option gives the greatest flexibility, offering a number of packages to ins
   - OpenSSH server
   - OpenVPN server
 
-#### Domain Controller
-This installation choice installs the greatest amount of software by default.  ***ENSURE you have the correct domain name for this installation.  Samba DOES NOT permit renaming the domain.***
-- It asks additional questions specific to DC configuration
-- It installs:
-  - Webmin
-  - LAMP web server suite
-  - phpMyAdmin
-  - OpenSSH server
-  - OpenVPN server
-  - Bind DNS Server
-  - Samba File Server
-  - Kerberos authentication protocol
-  - Winbind service
-- It provisions Samba Active Directory
-
 ## The first script
 On first boot, the EspressoBin can't download anything without performing multiple steps ahead of time.  Copy the following and paste it into the terminal on the EspressoBin.  It will prep the EspressoBin so that it can download and execute the larger configuration script.
 ```
@@ -60,21 +47,12 @@ preconfig(){
 	ip link set dev lan1 up
 	dhclient lan1
 	apt-get update
-	sleep 5 # Testing has revaled the EBin sometimes needs a moment before it can install wget
+	sleep 5
 	apt-get install wget -y
 	
-  # TESTING ONLY - Will be removed as soon as main script is finished
-	echo '#!/bin/bash' > redux.sh
-	echo "if [ -e espressobin.s ]; then rm espressobin.s; fi" >> redux.sh
-	echo "if [ -e cfginfo.cfg ]; then rm cfginfo.cfg; fi" >> redux.sh
-	echo "wget http://chameleonoriginals.com/c/espressobin.s" >> redux.sh
-	echo "chmod +x espressobin.s" >> redux.sh
-	echo "bash espressobin.s" >> redux.sh
-	
-  # TESTING IN PROCESS - Will be updated with final script URL
-	wget http://chameleonoriginals.com/c/espressobin.s
-	chmod +x espressobin.s
-	bash espressobin.s
+	wget https://raw.githubusercontent.com/ChameleonGeek/ebin-kodi/master/espressobin.sh
+	chmod +x espressobin.sh
+	bash espressobin.sh
 }
 preconfig
 
@@ -97,14 +75,6 @@ Enter a password for the mySQL user "root."  The mySQL server shouldn't have a b
 - Select yes when asked whether to use dbconfig-common to set up the database
 - Enter and confirm a password for the phpMyAdmin application to connect to mySQL. You can let phpMyAdmin create a random password. ***As a user or DBA, you won't need to use this password.***
 
-#### Configuring Kerberos Authentication
-Using "example.lan" as the model for the domain, enter the values ***exactly as shown (including uppercase and lowercase)***
-- For the default Kerberos version 5 realm, enter EXAMPLE.LAN
-- For the Kerberos servers for your realm, enter the hostname you entered for the EspressoBin (lowercase)
-- For the administrative server for the Kerberos realm, enter the hostname you entered for the EspressoBin (lowercase)
-
-
-
 #### Interactive User:
 The root account shouldn't be used for routine interactions with the EspressoBin. Enter a user name and password for this interactive account and answer the Ubuntu user information questions.
 ***Write down or remember this username and password. It is the interactive superuser account.***
@@ -112,15 +82,3 @@ The root account shouldn't be used for routine interactions with the EspressoBin
 #### Root User:
 By default, Ubuntu sets the root account with no password. This account should be password protected. This should not be the same password as the interactive user.
 ***Write down or remember this password.***
-
-## After reboot
-If you opted to configure the EspressoBin, you must reboot and log in as root (this time with the new password).  The script will resart and perform the remaining configuration steps
-
-#### Interactive Samba Provisioning
-Using "example.lan" as the model for the domain, enter the values ***exactly as shown (including uppercase and lowercase)***
-- For Realm, enter EXAMPLE.LAN
-- For Domain, enter EXAMPLE
-- For Server Role, enter dc
-- For DNS backend, enter SAMBA_INTERNAL
-- For DNS forwarder IP address, enter the default gateway/router IP address you entered at the beginning of the script
-Enter a password for the Domain Administrator ***write down or remember this password!***
