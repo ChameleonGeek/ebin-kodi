@@ -210,9 +210,9 @@ sethostname(){
 	echo -e "127.0.0.1\t$HOSTNAME" > /etc/hosts
 	fulldom="$(cfg_read "Domain Name")"
 	if ! [ "$fulldom" = "" ]; then
-		echo "127.0.0.1\t$HOSTNAME.$fulldom" > /etc/hosts
+		echo -e "127.0.0.1\t$HOSTNAME.$fulldom" > /etc/hosts
 	else
-		echo "127.0.0.1\t$HOSTNAME.$fulldom $HOSTNAME" > /etc/hosts
+		echo -e "127.0.0.1\t$HOSTNAME" > /etc/hosts
 	fi
 	hostname -b "$HOSTNAME"
 	/etc/init.d/hostname.sh restart
@@ -340,6 +340,7 @@ installsamba(){
 	if [ "$(cfg_read SAMBA)" = "0" ]; then return 0; fi
 	note "Installing Samba FileServer"
 	tasksel install samba-server
+	apt-get install ntfs-3g -y
 	loginstall "Samba"
 }
 
