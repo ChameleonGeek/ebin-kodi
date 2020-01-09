@@ -58,8 +58,10 @@ if [ "$esa" = "0" ]; then
   sudo mkfs -t ext4 "${DEVICEPATH}"
   sudo mount "${DEVICEPATH}" /ebincard
   cd /ebincard
-  sudo tar -xvf /home/pi/rootfs.tar.bz2
-  cd /home/pi
+  #sudo tar -xvf /home/pi/rootfs.tar.bz2
+  sudo tar -xvf /home/michael/rootfs.tar.bz2
+  #cd /home/pi
+  cd /home/michael
   sudo umount /ebincard
   sudo rm -rf /ebincard
   echo "Card has been prepped and is safe to disconnect."
