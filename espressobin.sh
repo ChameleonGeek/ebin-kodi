@@ -332,16 +332,29 @@ installphpmyadmin(){
 
 installpip(){ 
 	note "Installing pip for Python3"
-	apt-get install python3-pip -y
+	apt-get install python3-pip python-dev -y
 	loginstall "python3-pip"
+	note "Installing Flask for Python 3"
+	pip3 install flask
+	note "Installing xattr for python 3"
+	pip3 install python-dev
 }
 
 installsamba(){
 	if [ "$(cfg_read SAMBA)" = "0" ]; then return 0; fi
 	note "Installing Samba FileServer"
 	tasksel install samba-server
-	apt-get install ntfs-3g -y
+	apt-get install ntfs-3g acl attr -y
 	loginstall "Samba"
+}
+
+installkerberos(){
+	note "Installing kerberos prereqs"
+	sudo apt-get install acl attr build-essential dnsutils docbook-xsl gdb krb5-config krb5-user \
+		libacl1-dev libattr1-dev libblkid-dev libbsd-dev libcups2-dev libgnutls-dev libldap2-dev \
+		libnss-winbind libpam-winbind libpam0g-dev libpopt-dev libreadline-dev ntp ntpdate pkg-config \
+		python-dev python-dnspython winbind -y
+
 }
 
 installssh(){
